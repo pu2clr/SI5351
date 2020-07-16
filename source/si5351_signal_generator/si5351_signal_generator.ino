@@ -3,6 +3,9 @@
   It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs. 
   This sketch is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz.
 
+   For SI5351 control, this sketch uses the the Etherkit/si5351 Arduino library from Jason Milldrum (https://github.com/etherkit/Si5351Arduino);
+   For encoder control, this sketch uses the Rotary Encoder Class implementation from Ben Buxton (the source code is included together with this sketch)
+
    Arduino Pro Mini 3.3V (8MHz) and SI5351 breakout wire up
 
    | Device name        | Device Pin / Description  |  Arduino Pin  |
