@@ -31,6 +31,20 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE ARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+## Photos 
+
+The photos below show the multipurpose signal generator controlled by Arduino. This project uses an Arduino Nano. However, you can use any Arduino board. In this case, see the pinout of your Arduino.  
+
+![Photo 01](extras/images/photo_02.png)
+
+
+
+![Photo 02](extras/images/photo_03.png)
+
+
+
+![Photo 03](extas/../extras/images/photo_04.png)
+
 
 ## References
 
