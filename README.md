@@ -1,6 +1,6 @@
 # Multipurpose signal generator with SI5351
 
-It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs
+It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs.
 
 
 ## Preface
