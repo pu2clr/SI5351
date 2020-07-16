@@ -1,7 +1,7 @@
 # Multipurpose signal generator with SI5351
 
 It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs.
-
+The [Arduino sketch](https://github.com/pu2clr/SI5351/tree/master/source) is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz. 
 
 This project can be freely distributed using the [MIT Free Software model](https://pu2clr.github.io/SI5351/#mit-license). 
 

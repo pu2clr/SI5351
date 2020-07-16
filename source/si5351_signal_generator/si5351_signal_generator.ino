@@ -1,8 +1,7 @@
 
 /**
-
   It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs. 
-
+  This sketch is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz.
 
    Arduino Pro Mini 3.3V (8MHz) and SI5351 breakout wire up
 
@@ -14,14 +13,17 @@
    |   SI5351           |                           |               |
    |                    | SDIO (pin 18)             |     A4        |
    |                    | SCLK (pin 17)             |     A5        |
-   |   Button           |                           |               |
-   |                    | Step Switch               |      4        |
+   |   Buttons          |                           |               |
+   |                    | SWITCH_CMD                |      4        |
+   |                    | BUTTON_UP                 |      6        |
+   |                    | BUTTON_DOWN               |      5        |
    |   Encoder          |                           |               |
    |                    | A                         |      3        |
    |                    | B                         |      2        |
 
    See https://github.com/etherkit/Si5351Arduino  and know how to calibrate your Si5351
    Author: Ricardo Lima Caratti 2020
+
 */
 
 #include <si5351.h>
@@ -33,7 +35,7 @@
 // Enconder PINs
 #define ENCODER_PIN_A 3 // Encoder pin A
 #define ENCODER_PIN_B 2 // Encoder pin B
-#define SWITCH_CMD 4   // ENCODER button or regular push button
+#define SWITCH_CMD  4   // ENCODER button or regular push button
 #define BUTTON_UP   6   // Button up command
 #define BUTTON_DOWN 5   // Button down command
 
@@ -49,9 +51,8 @@
 
 // VFO range for this project is 3000 KHz to 30000 KHz (3MHz to 30MHz).
 
-#define MIN_VFO 300000000LLU     // VFO min. frequency 3Mhz
-#define MAX_VFO 3000000000LLU    // VFO max. frequency 30MHz
-
+#define MIN_VFO 3276800LLU
+#define MAX_VFO 16000000000LLU    // VFO max. frequency 30MHz
 
 // Struct for step
 typedef struct
@@ -62,14 +63,17 @@ typedef struct
 
 // Steps database. You can change the Steps and numbers of steps here if you need.
 Step step[] = {
-  {(char *) "100Hz ", 10000}, // Minimum Frequency step (incremente or decrement) 100Hz
-  {(char *) "500Hz ", 50000},
-  {(char *) "1KHz  ", 100000},
-  {(char *) "5KHz  ", 500000},
-  {(char *) "10KHz ", 1000000},
-  {(char *) "50KHz ", 5000000},
-  {(char *) "500KHz", 50000000}
-}; // Maximum frequency step 500KHz
+    {(char *)"100Hz", 100},   // Minimum Frequency step (incremente or decrement) 1Hz
+    {(char *)"100Hz", 1000},  
+    {(char *)"100Hz", 10000}, 
+    {(char *)"500Hz", 50000},
+    {(char *)"1KHz", 100000},
+    {(char *)"5KHz", 500000},
+    {(char *)"10KHz", 1000000},
+    {(char *)"32.768KHz", 3276800},
+    {(char *)"50KHz", 5000000},
+    {(char *)"500KHz", 50000000},
+    {(char *)"1MHz", 100000000}}; // Maximum frequency step 500KHz
 
 // Calculate the index of last position of step[] array
 const int lastStepVFO = (sizeof step / sizeof(Step)) - 1;
@@ -77,10 +81,9 @@ int currentStep = 4;
 
 
 // Your favotite frequencies
-uint64_t favorite[] = { 350000000LLU, 720500000LLU, 800000000LLU, 1070000000LLU,
-                        1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU,
-                        2700000000LLU, 2800000000LLU, 2800000000LLU
-                      };
+uint64_t favorite[] = {3276800LLU, 350000000LLU, 720500000LLU, 800000000LLU, 1070000000LLU,
+                       1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU, 2700000000LLU,
+                       2800000000LLU, 4500000000LLU, 5000000000LLU, 10000000000LLU};
 const int lastFavorite = (sizeof favorite / sizeof(uint64_t) ) - 1;
 int currentFavorite = 3;
 
@@ -94,9 +97,6 @@ SSD1306AsciiAvrI2c display;
 
 // The Si5351 instance.
 Si5351 si5351;
-
-
-
 
 bool isFreqChanged = true;
 bool clearDisplay = false;
@@ -121,14 +121,17 @@ void setup()
   // Initiating the OLED Display
   display.begin(&Adafruit128x64, I2C_ADDRESS);
   display.setFont(Adafruit5x7);
-  display.set2X();
+  display.set1X();
   display.clear();
-  display.setCursor(0, 0);
-  display.print("\nShortwave");
-  display.print("\nTransmitter");
-  display.print("\n\nBY PU2CLR");
-
-  delay(3000);
+  display.setCursor(17, 0);
+  display.print("Multipurpose");
+  display.setCursor(33, 1);
+  display.print("Signal");
+  display.setCursor(23, 2);
+  display.print("Generator");
+  display.setCursor(22, 5);
+  display.print("BY PU2CLR");
+  delay(4000);
   display.clear();
 
   vfoFreq = favorite[currentFavorite];
@@ -176,19 +179,26 @@ void rotaryEncoder()
 // Verificar setCursor() em https://github.com/greiman/SSD1306Ascii/issues/53
 void showStatus()
 {
+  char aux[15];
   double vfo = vfoFreq / 100000.0;
+
+  dtostrf(vfo,5,3,aux);
+
   display.setCursor(0, 0);
   display.set2X();
   display.setCursor(0, 0);
-  display.print(vfo);
+  display.print("          ");
+  display.setCursor(0, 0);
+  display.print(aux);
+  display.setCursor(90,2);
   display.set1X();
-  display.print(" KHz");
-  display.setCursor(0, 3);
+  display.print("KHz");
+  display.setCursor(0, 4);
   display.print("Step: ");
   display.print(step[currentStep].name);
-  display.setCursor(0, 5);
+  display.setCursor(0, 6);
   display.print("Command: ");
-  display.print((currentCommand == CMD_STEP) ? "STEP" : "FAVORITE");
+  display.print((currentCommand == CMD_STEP) ? "STEP" : "Stored Freq.");
 }
 
 // Change the frequency (increment or decrement)
@@ -206,6 +216,7 @@ void changeFreq(int direction)
 }
 
 void doCommandUp() {
+  display.clear();
   if ( currentCommand == CMD_STEP )
     currentStep = (currentStep < lastStepVFO) ? (currentStep + 1) : 0;
   else {
@@ -213,11 +224,11 @@ void doCommandUp() {
     vfoFreq = favorite[currentFavorite];
     isFreqChanged = true;
   }
-
   delay(200);
 }
 
 void doCommandDown() {
+  display.clear();
   if ( currentCommand == CMD_STEP )
     currentStep = (currentStep > 0) ? (currentStep - 1) : lastStepVFO;
   else {
@@ -242,6 +253,7 @@ void loop()
 
   // Switch the current command control (step or favorite frequencies)
   if (digitalRead(SWITCH_CMD) == LOW) {
+    display.clear();
     currentCommand = (currentCommand == CMD_STEP) ? CMD_FAVORITE : CMD_STEP;
     showStatus();
     delay(200);
