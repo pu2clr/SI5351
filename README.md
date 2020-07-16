@@ -11,7 +11,7 @@ The Si5351 is an I2C configurable clock generator that is very appropriate for m
 
 ## Schematic
 
-![Schematic]()
+![Schematic](https://github.com/pu2clr/SI5351/blob/master/extras/images/schematic_eagle.png)
 
 
 ## References
