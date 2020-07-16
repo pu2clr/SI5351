@@ -9,6 +9,11 @@ The Si5351 is an I2C configurable clock generator that is very appropriate for m
 
 
 
+## Schematic
+
+![Schematic]()
+
+
 ## References
 
 [Si5351A/B/C-B  I2C-PROGRAMMABLE ANY-FREQUENCY CMOS CLOCKGENERATOR + VCXO](https://www.silabs.com/documents/public/data-sheets/Si5351-B.pdf). 
