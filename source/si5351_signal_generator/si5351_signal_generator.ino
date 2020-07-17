@@ -53,9 +53,8 @@
 #define RST_PIN -1 // Define proper RST_PIN if required.
 
 // Change this value bellow  (CORRECTION_FACTOR) to 0 if you do not know the correction factor of your Si5351A.
-#define CORRECTION_FACTOR 80000 // See how to calibrate your Si5351A (0 if you do not want).
-
-// VFO range for this project is 3000 KHz to 30000 KHz (3MHz to 30MHz).
+#define CORRECTION_FACTOR -13500 // See how to calibrate your Si5351A (0 if you do not want).
+// #define CORRECTION_FACTOR 0
 
 #define MIN_VFO 3276800LLU
 #define MAX_VFO 16000000000LLU    // VFO max. frequency 30MHz
@@ -76,7 +75,7 @@ Step step[] = {
     {(char *)"1KHz", 100000},
     {(char *)"5KHz", 500000},
     {(char *)"10KHz", 1000000},
-    {(char *)"32.768KHz", 3276800},
+    {(char *)"32.768K", 3276800},
     {(char *)"50KHz", 5000000},
     {(char *)"500KHz", 50000000},
     {(char *)"1MHz", 100000000}}; // Maximum frequency step 500KHz
@@ -86,9 +85,9 @@ const int lastStepVFO = (sizeof step / sizeof(Step)) - 1;
 int currentStep = 4;
 
 // Your favotite frequencies
-uint64_t favorite[] = {3276800LLU, 350000000LLU, 720500000LLU, 800000000LLU, 1070000000LLU,
-                       1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU, 2700000000LLU,
-                       2800000000LLU, 4500000000LLU, 5000000000LLU, 10000000000LLU};
+uint64_t favorite[] = {3276800LLU, 350000000LLU, 710000000LLU, 800000000LLU, 1070000000LLU, 1200000000LLU,
+                       1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU, 2700000000LLU, 2800000000LLU, 
+                       3200000000LLU,4600000000LLU, 5000000000LLU, 10000000000LLU, 13300000000LLU, 14400000000LLU};
 const int lastFavorite = (sizeof favorite / sizeof(uint64_t) ) - 1;
 int currentFavorite = 3;
 
