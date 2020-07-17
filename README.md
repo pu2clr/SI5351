@@ -68,12 +68,12 @@ The current control is output clock (select the output you want to setup by pres
 
 The current frequency on output CLK2 is 28000 KHz (28MHz); the current control is Step (select the step you want by pressing left or right push buttons); in this case, the current step is 50 KHz.
 
-![Photo 03](extas/../extras/images/photo_04.png)
+![Photo 03](extras/images/photo_04.png)
 
 
 The current control is Favorite (select the favorite frequency you want for the current channel by pressing the left or right push buttons); the current step is 1 KHz; and current frequency is 16MHz. 
 
-![Photo 04](extas/../extras/images/photo_05.png)
+![Photo 04](extras/images/photo_05.png)
 
 
 ## References
