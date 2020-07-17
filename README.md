@@ -61,6 +61,9 @@ The photos below show the multipurpose signal generator controlled by Arduino. T
 ![Photo 03](extas/../extras/images/photo_04.png)
 
 
+![Photo 04](extas/../extras/images/photo_05.png)
+
+
 ## References
 
 [Si5351A/B/C-B  I2C-PROGRAMMABLE ANY-FREQUENCY CMOS CLOCKGENERATOR + VCXO](https://www.silabs.com/documents/public/data-sheets/Si5351-B.pdf). 
