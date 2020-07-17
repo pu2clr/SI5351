@@ -46,20 +46,32 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE ARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-## Photos 
+## Photos and Interface
+
+The user interface of this generator consists of three push buttons and an encoder. One of that push buttons comes with the encoder device. 
+
+Pressing the encoder push button, you can select the current control (Step, Favorite frequencies or output clock). By pressing de left or right push buttons, you can select the parameter you want for each kind of control. The display will show you the current status of the signal generator. 
+
 
 The photos below show the multipurpose signal generator controlled by Arduino. This project uses an Arduino Nano. However, you can use any Arduino board. In this case, see the pinout of your Arduino.  
+
+
+Current output clock is CLK0; the current Step is 10Hz; and current frequency is 8000.010 KHz 
 
 ![Photo 01](extras/images/photo_02.png)
 
 
+The current control is output clock (select the output you want to setup by pressing the left or right push button); current clock is CLK2; current frequency is 32.768 KHz; and current step is 10 Hz.
 
 ![Photo 02](extras/images/photo_03.png)
 
 
+The current frequency on output CLK2 is 28000 KHz (28MHz); the current control is Step (select the step you want by pressing left or right push buttons); in this case, the current step is 50 KHz.
 
 ![Photo 03](extas/../extras/images/photo_04.png)
 
+
+The current control is Favorite (select the favorite frequency you want for the current channel by pressing the left or right push buttons); the current step is 1 KHz; and current frequency is 16MHz. 
 
 ![Photo 04](extas/../extras/images/photo_05.png)
 
