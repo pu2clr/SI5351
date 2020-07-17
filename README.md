@@ -61,7 +61,7 @@ Current output clock is CLK0; the current Step is 10Hz; and current frequency is
 ![Photo 01](extras/images/photo_02.png)
 
 
-The current control is output clock (select the output you want to setup by pressing the left or right push button); current clock is CLK2; current frequency is 32.768 KHz; and current step is 10 Hz.
+The current control is output clock (select the output you want to setup by pressing the left or right push buttons); current clock is CLK2; current frequency is 32.768 KHz; and current step is 10 Hz.
 
 ![Photo 02](extras/images/photo_03.png)
 
