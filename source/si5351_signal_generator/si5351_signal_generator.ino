@@ -1,7 +1,9 @@
 
 /**
-  It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs. 
-  This sketch is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz.
+   It is a multipurpose signal generator controlled by Arduino. This project uses the SI5351 from Silicon Labs. 
+   This sketch is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz.
+
+   With this sketch you can control the three clock outputs. 
 
    For SI5351 control, this sketch uses the the Etherkit/si5351 Arduino library from Jason Milldrum (https://github.com/etherkit/Si5351Arduino);
    For encoder control, this sketch uses the Rotary Encoder Class implementation from Ben Buxton (the source code is included together with this sketch)
@@ -44,6 +46,7 @@
 
 #define CMD_STEP     0
 #define CMD_FAVORITE 1
+#define CMD_CLK      2 
 
 // OLED Diaplay constants
 #define I2C_ADDRESS 0x3C
@@ -66,8 +69,8 @@ typedef struct
 
 // Steps database. You can change the Steps and numbers of steps here if you need.
 Step step[] = {
-    {(char *)"100Hz", 100},   // Minimum Frequency step (incremente or decrement) 1Hz
-    {(char *)"100Hz", 1000},  
+    {(char *)"1Hz", 100},   // Minimum Frequency step (incremente or decrement) 1Hz
+    {(char *)"10Hz", 1000},  
     {(char *)"100Hz", 10000}, 
     {(char *)"500Hz", 50000},
     {(char *)"1KHz", 100000},
@@ -82,7 +85,6 @@ Step step[] = {
 const int lastStepVFO = (sizeof step / sizeof(Step)) - 1;
 int currentStep = 4;
 
-
 // Your favotite frequencies
 uint64_t favorite[] = {3276800LLU, 350000000LLU, 720500000LLU, 800000000LLU, 1070000000LLU,
                        1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU, 2700000000LLU,
@@ -90,7 +92,17 @@ uint64_t favorite[] = {3276800LLU, 350000000LLU, 720500000LLU, 800000000LLU, 107
 const int lastFavorite = (sizeof favorite / sizeof(uint64_t) ) - 1;
 int currentFavorite = 3;
 
-byte currentCommand = CMD_STEP;
+uint64_t currentOutputClock[]{1070000000LLU, 1350000000LLU, 3276800LLU}; // Stores the current clock on CLK0, CLK1 and CLK2
+const int lastCurrentOutputClock = (sizeof currentOutputClock / sizeof(uint64_t)) - 1;
+
+
+int currentClock = 0; // current clock output 0
+
+int currentCommand = CMD_STEP;
+
+char *cmd[] = {(char *) "Step", (char *) "Favorite", (char *) "Out. Clk" };
+char *clk[] = {(char *) "CLK0", (char *) "CLK1", (char *) "CLK2" };
+
 
 // Encoder controller
 Rotary encoder = Rotary(ENCODER_PIN_A, ENCODER_PIN_B);
@@ -138,6 +150,7 @@ void setup()
   display.clear();
 
   vfoFreq = favorite[currentFavorite];
+  currentOutputClock[currentClock] = vfoFreq;
 
   showStatus();
   // Initiating the Signal Generator (si5351)
@@ -145,7 +158,7 @@ void setup()
   // Adjusting the frequency (see how to calibrate the Si5351 - example si5351_calibration.ino)
   si5351.set_correction(CORRECTION_FACTOR, SI5351_PLL_INPUT_XO);
   si5351.set_pll(SI5351_PLL_FIXED, SI5351_PLLA);
-  si5351.set_freq(vfoFreq, SI5351_CLK0); // Start CLK0 (VFO)
+  si5351.set_freq(vfoFreq, currentClock); // Start CLK0 (VFO)
 
   // Disable CLK 1 and 2 outputs
   si5351.output_enable(SI5351_CLK1, 0);
@@ -193,15 +206,17 @@ void showStatus()
   display.print("          ");
   display.setCursor(0, 0);
   display.print(aux);
-  display.setCursor(90,2);
+  display.setCursor(95,2);
   display.set1X();
   display.print("KHz");
   display.setCursor(0, 4);
   display.print("Step: ");
   display.print(step[currentStep].name);
+  display.print(" - ");
+  display.print(clk[currentClock]);
   display.setCursor(0, 6);
   display.print("Command: ");
-  display.print((currentCommand == CMD_STEP) ? "STEP" : "Stored Freq.");
+  display.print(cmd[currentCommand]);
 }
 
 // Change the frequency (increment or decrement)
@@ -222,10 +237,15 @@ void doCommandUp() {
   display.clear();
   if ( currentCommand == CMD_STEP )
     currentStep = (currentStep < lastStepVFO) ? (currentStep + 1) : 0;
-  else {
+  else if (currentCommand == CMD_FAVORITE )
+  {
     currentFavorite = (currentFavorite < lastFavorite) ? (currentFavorite + 1) : 0;
     vfoFreq = favorite[currentFavorite];
+    currentOutputClock[currentClock] = vfoFreq;
     isFreqChanged = true;
+  } else {
+    currentClock = (currentClock < lastCurrentOutputClock) ? (currentClock + 1) : 0;
+    vfoFreq = currentOutputClock[currentClock];
   }
   delay(200);
 }
@@ -234,10 +254,15 @@ void doCommandDown() {
   display.clear();
   if ( currentCommand == CMD_STEP )
     currentStep = (currentStep > 0) ? (currentStep - 1) : lastStepVFO;
-  else {
+  else if (currentCommand == CMD_FAVORITE)
+  {
     currentFavorite = (currentFavorite > 0) ? (currentFavorite - 1) : lastFavorite;
     vfoFreq = favorite[currentFavorite];
+    currentOutputClock[currentClock] = vfoFreq;
     isFreqChanged = true;
+  } else {
+    currentClock = (currentClock > 0) ? (currentClock - 1) : lastCurrentOutputClock;
+    vfoFreq = currentOutputClock[currentClock];
   }
   delay(200);
 }
@@ -257,7 +282,7 @@ void loop()
   // Switch the current command control (step or favorite frequencies)
   if (digitalRead(SWITCH_CMD) == LOW) {
     display.clear();
-    currentCommand = (currentCommand == CMD_STEP) ? CMD_FAVORITE : CMD_STEP;
+    currentCommand = (currentCommand >= 2)? 0: (currentCommand + 1);;
     showStatus();
     delay(200);
   } else if (digitalRead(BUTTON_UP) == LOW) {
@@ -270,7 +295,8 @@ void loop()
 
   if (isFreqChanged)
   {
-    si5351.set_freq(vfoFreq, SI5351_CLK0);
+    si5351.set_freq(vfoFreq, currentClock);
+    currentOutputClock[currentClock] = vfoFreq;
     showStatus();
     isFreqChanged = false;
   }
