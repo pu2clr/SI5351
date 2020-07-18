@@ -44,7 +44,7 @@ There is a __Facebook__ group called [__Si47XX for Radio Experimenters__](https:
 
 ## Schematic
 
-![Schematic](https://github.com/pu2clr/SI5351/blob/master/extras/images/schematic_eagle.png)
+![Schematic](extras/images/schematic_eagle.png)
 
 
 ## Photos and Interface
