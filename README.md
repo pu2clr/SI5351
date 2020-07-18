@@ -12,6 +12,14 @@ Contact: __pu2clr@gmail.com__.
 Be a member of Facebook group [DSP receivers for hobbyists](https://www.facebook.com/groups/2655942598067211)
 
 
+## Content
+
+1. [Preface](https://pu2clr.github.io/SI5351/#preface)
+2. [Schematic](https://pu2clr.github.io/SI5351/#schematic)
+3. [Photos and Interface](https://pu2clr.github.io/SI5351/#photos-and-interface)
+4. [Source Code](source)
+5. [References](https://pu2clr.github.io/SI5351/#references)
+
 ## Preface
 
 The Si5351 is an I2C configurable clock generator that is very appropriate for many electronic projects. It is also a great device for replacing crystal oscillators. This project uses a version of SI5351 that has three signal outputs that can vary from 8Hz to 160Mhz. These outputs, can give you three distinct frequencies running at the same time. A great feature of the Si5351A is the possibility of using it with a microcontroller or platform like Arduino, PIC family and others. This small project is about a multipurpose signal generator controlled by Arduino or similar. For more information about SI5351A see [Si5351A/B/C-B  I2C-PROGRAMMABLE ANY-FREQUENCY CMOS CLOCKGENERATOR + VCXO](https://www.silabs.com/documents/public/data-sheets/Si5351-B.pdf). 
@@ -37,8 +45,6 @@ There is a __Facebook__ group called [__Si47XX for Radio Experimenters__](https:
 ## Schematic
 
 ![Schematic](https://github.com/pu2clr/SI5351/blob/master/extras/images/schematic_eagle.png)
-
-
 
 
 ## Photos and Interface
