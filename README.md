@@ -44,7 +44,7 @@ There is a __Facebook__ group called [__Si47XX for Radio Experimenters__](https:
 
 ## Arduino Source Code
 
-   The Arduino sketch  can be found on [source folder - https://github.com/pu2clr/SI5351/tree/master/source](https://github.com/pu2clr/SI5351/tree/master/source). The software is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz.
+   The Arduino sketch can be found on [source folder - https://github.com/pu2clr/SI5351/tree/master/source](https://github.com/pu2clr/SI5351/tree/master/source). The software is configured to control the SI5351 from 32.768KHz to 160MHz and steps from 1Hz to 1MHz.
 
    For SI5351 control, the Arduino sketch uses the [Etherkit/si5351 Arduino library from Jason Milldrum](https://github.com/etherkit/Si5351Arduino);
 
