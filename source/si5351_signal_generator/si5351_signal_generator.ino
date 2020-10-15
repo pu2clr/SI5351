@@ -157,7 +157,7 @@ void setup()
   // Adjusting the frequency (see how to calibrate the Si5351 - example si5351_calibration.ino)
   si5351.set_correction(CORRECTION_FACTOR, SI5351_PLL_INPUT_XO);
   si5351.set_pll(SI5351_PLL_FIXED, SI5351_PLLA);
-  si5351.set_freq(vfoFreq, currentClock); // Start CLK0 (VFO)
+  si5351.set_freq(vfoFreq, (si5351_clock) currentClock); // Start CLK0 (VFO)
 
   // Disable CLK 1 and 2 outputs
   si5351.output_enable(SI5351_CLK1, 0);
@@ -294,7 +294,7 @@ void loop()
 
   if (isFreqChanged)
   {
-    si5351.set_freq(vfoFreq, currentClock);
+    si5351.set_freq(vfoFreq, (si5351_clock) currentClock);
     currentOutputClock[currentClock] = vfoFreq;
     showStatus();
     isFreqChanged = false;
