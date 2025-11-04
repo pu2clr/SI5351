@@ -41,27 +41,27 @@
 #include "SSD1306AsciiAvrI2c.h"
 
 // Enconder PINs
-#define ENCODER_PIN_A 3 // Encoder pin A
-#define ENCODER_PIN_B 2 // Encoder pin B
-#define SWITCH_CMD  4   // ENCODER button or regular push button
-#define BUTTON_UP   6   // Button up command
-#define BUTTON_DOWN 5   // Button down command
+#define ENCODER_PIN_A 3  // Encoder pin A
+#define ENCODER_PIN_B 2  // Encoder pin B
+#define SWITCH_CMD 4     // ENCODER button or regular push button
+#define BUTTON_UP 6      // Button up command
+#define BUTTON_DOWN 5    // Button down command
 
-#define CMD_STEP     0
+#define CMD_STEP 0
 #define CMD_FAVORITE 1
-#define CMD_CLK      2
-#define CMD_SAVE     3
+#define CMD_CLK 2
+#define CMD_SAVE 3
 
 // OLED Diaplay constants
 #define I2C_ADDRESS 0x3C
-#define RST_PIN -1 // Define proper RST_PIN if required.
+#define RST_PIN -1  // Define proper RST_PIN if required.
 
 // Change this value bellow  (CORRECTION_FACTOR) to 0 if you do not know the correction factor of your Si5351A.
-#define CORRECTION_FACTOR -13500 // See how to calibrate your Si5351A (0 if you do not want).
+#define CORRECTION_FACTOR -13500  // See how to calibrate your Si5351A (0 if you do not want).
 // #define CORRECTION_FACTOR 0
 
 #define MIN_VFO 3276800LLU
-#define MAX_VFO 16000000000LLU    // VFO max. frequency 30MHz
+#define MAX_VFO 16000000000LLU  // VFO max. frequency 30MHz
 
 
 const uint8_t app_id = 80;  // Useful to check the EEPROM content before processing useful data
@@ -71,45 +71,46 @@ const int eeprom_address = 0;
 // Struct for step
 typedef struct
 {
-  char *name; // step label: 50Hz, 10Hz, 500Hz and 100KHz
-  long value; // Frequency value (unit 0.01Hz See documentation) to increment or decrement
+  char *name;  // step label: 50Hz, 10Hz, 500Hz and 100KHz
+  long value;  // Frequency value (unit 0.01Hz See documentation) to increment or decrement
 } Step;
 
 // Steps database. You can change the Steps and numbers of steps here if you need.
 Step step[] = {
-    {(char *)"1Hz", 100},   // Minimum Frequency step (incremente or decrement) 1Hz
-    {(char *)"10Hz", 1000},  
-    {(char *)"100Hz", 10000}, 
-    {(char *)"500Hz", 50000},
-    {(char *)"1KHz", 100000},
-    {(char *)"5KHz", 500000},
-    {(char *)"10KHz", 1000000},
-    {(char *)"32.768K", 3276800},
-    {(char *)"50KHz", 5000000},
-    {(char *)"500KHz", 50000000},
-    {(char *)"1MHz", 100000000}}; // Maximum frequency step 500KHz
+  { (char *)"1Hz", 100 },  // Minimum Frequency step (incremente or decrement) 1Hz
+  { (char *)"10Hz", 1000 },
+  { (char *)"100Hz", 10000 },
+  { (char *)"500Hz", 50000 },
+  { (char *)"1KHz", 100000 },
+  { (char *)"5KHz", 500000 },
+  { (char *)"10KHz", 1000000 },
+  { (char *)"32.768K", 3276800 },
+  { (char *)"50KHz", 5000000 },
+  { (char *)"500KHz", 50000000 },
+  { (char *)"1MHz", 100000000 }
+};  // Maximum frequency step 500KHz
 
 // Calculate the index of last position of step[] array
 const int lastStepVFO = (sizeof step / sizeof(Step)) - 1;
 int currentStep = 4;
 
 // Your favotite frequencies
-uint64_t favorite[] = {3276800LLU, 45500000LLU, 350000000LLU, 710000000LLU, 800000000LLU, 1070000000LLU, 1200000000LLU,
-                       1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU, 2700000000LLU, 2800000000LLU, 
-                       3200000000LLU,4600000000LLU, 5000000000LLU, 10000000000LLU, 13300000000LLU, 14400000000LLU};
-const int lastFavorite = (sizeof favorite / sizeof(uint64_t) ) - 1;
+uint64_t favorite[] = { 3276800LLU, 45500000LLU, 350000000LLU, 710000000LLU, 800000000LLU, 1070000000LLU, 1200000000LLU,
+                        1350000000LLU, 1600000000LLU, 2000000000LLU, 2400000000LLU, 2700000000LLU, 2800000000LLU,
+                        3200000000LLU, 4600000000LLU, 5000000000LLU, 10000000000LLU, 13300000000LLU, 14400000000LLU };
+const int lastFavorite = (sizeof favorite / sizeof(uint64_t)) - 1;
 int currentFavorite = 3;
 
-uint64_t currentOutputClock[]{1070000000LLU, 1350000000LLU, 3276800LLU}; // Stores the current clock on CLK0, CLK1 and CLK2
+uint64_t currentOutputClock[]{ 1070000000LLU, 1350000000LLU, 3276800LLU };  // Stores the current clock on CLK0, CLK1 and CLK2
 const int lastCurrentOutputClock = (sizeof currentOutputClock / sizeof(uint64_t)) - 1;
 
 
-int currentClock = 0; // current clock output 0
+int currentClock = 0;  // current clock output 0
 
 int currentCommand = CMD_STEP;
 
-char *cmd[] = {(char *) "Step", (char *) "Favorite", (char *) "Out. Clk", (char *) "Save" };
-char *clk[] = {(char *) "CLK0", (char *) "CLK1", (char *) "CLK2" };
+char *cmd[] = { (char *)"Step", (char *)"Favorite", (char *)"Out. Clk", (char *)"Save" };
+char *clk[] = { (char *)"CLK0", (char *)"CLK1", (char *)"CLK2" };
 
 
 // Encoder controller
@@ -130,15 +131,14 @@ uint64_t vfoLastValue;
 // Encoder control variables
 volatile int encoderCount = 0;
 
-void setup()
-{
+void setup() {
   // Encoder pins
   pinMode(ENCODER_PIN_A, INPUT_PULLUP);
   pinMode(ENCODER_PIN_B, INPUT_PULLUP);
   // Si5351 contrtolers pins
 
   pinMode(SWITCH_CMD, INPUT_PULLUP);
-  pinMode(BUTTON_UP,  INPUT_PULLUP);
+  pinMode(BUTTON_UP, INPUT_PULLUP);
   pinMode(BUTTON_DOWN, INPUT_PULLUP);
 
   // Initiating the OLED Display
@@ -165,8 +165,6 @@ void setup()
   delay(4000);
   display.clear();
 
-
-  showStatus();
   // Initiating the Signal Generator (si5351)
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
   // Adjusting the frequency (see how to calibrate the Si5351 - example si5351_calibration.ino)
@@ -183,13 +181,15 @@ void setup()
     saveAll();
   }
 
-  si5351.set_freq(vfoFreq, (si5351_clock) currentClock); // Start CLK0 (VFO)
+  si5351.set_freq(vfoFreq, (si5351_clock)currentClock);  // Start CLK0 (VFO)
 
   // Disable CLK 1 and 2 outputs
   si5351.output_enable(SI5351_CLK1, 0);
   si5351.output_enable(SI5351_CLK2, 0);
   si5351.update_status();
 
+  showStatus();
+  
   delay(500);
 
   // Encoder interrupt
@@ -210,12 +210,11 @@ void saveAll() {
   EEPROM.put(addr, currentFavorite);
   addr += sizeof(currentFavorite);
   EEPROM.put(addr, currentClock);
-
 }
 
 // Read all settings from EEPROM
 void readAll() {
-  int addr = eeprom_address + 1; // skip app_id
+  int addr = eeprom_address + 1;  // skip app_id
   EEPROM.get(addr, vfoFreq);
   addr += sizeof(vfoFreq);
   EEPROM.get(addr, currentStep);
@@ -227,17 +226,12 @@ void readAll() {
 
 
 // Use Rotary.h and  Rotary.cpp implementation to process encoder via interrupt
-void rotaryEncoder()
-{ // rotary encoder events
+void rotaryEncoder() {  // rotary encoder events
   uint8_t encoderStatus = encoder.process();
-  if (encoderStatus)
-  {
-    if (encoderStatus == DIR_CW)
-    {
+  if (encoderStatus) {
+    if (encoderStatus == DIR_CW) {
       encoderCount = 1;
-    }
-    else
-    {
+    } else {
       encoderCount = -1;
     }
   }
@@ -245,12 +239,11 @@ void rotaryEncoder()
 
 // Show Signal Generator Information
 // Verificar setCursor() em https://github.com/greiman/SSD1306Ascii/issues/53
-void showStatus()
-{
+void showStatus() {
   char aux[15];
   double vfo = vfoFreq / 100000.0;
 
-  dtostrf(vfo,5,3,aux);
+  dtostrf(vfo, 5, 3, aux);
 
   display.setCursor(0, 0);
   display.set2X();
@@ -258,7 +251,7 @@ void showStatus()
   display.print("          ");
   display.setCursor(0, 0);
   display.print(aux);
-  display.setCursor(95,2);
+  display.setCursor(95, 2);
   display.set1X();
   display.print("KHz");
   display.setCursor(0, 4);
@@ -273,11 +266,10 @@ void showStatus()
 
 // Change the frequency (increment or decrement)
 // direction parameter is 1 (clockwise) or -1 (counter-clockwise)
-void changeFreq(int direction)
-{
-  vfoFreq += step[currentStep].value * direction; // currentStep * direction;
+void changeFreq(int direction) {
+  vfoFreq += step[currentStep].value * direction;  // currentStep * direction;
   // Check the VFO limits
-  if (vfoFreq > MAX_VFO )
+  if (vfoFreq > MAX_VFO)
     vfoFreq = MIN_VFO;
   else if (vfoFreq < MIN_VFO)
     vfoFreq = MAX_VFO;
@@ -287,17 +279,15 @@ void changeFreq(int direction)
 
 void doCommandUp() {
   display.clear();
-  if ( currentCommand == CMD_STEP )
+  if (currentCommand == CMD_STEP)
     currentStep = (currentStep < lastStepVFO) ? (currentStep + 1) : 0;
-  else if (currentCommand == CMD_FAVORITE )
-  {
+  else if (currentCommand == CMD_FAVORITE) {
     currentFavorite = (currentFavorite < lastFavorite) ? (currentFavorite + 1) : 0;
     vfoFreq = favorite[currentFavorite];
     currentOutputClock[currentClock] = vfoFreq;
     isFreqChanged = true;
-  } else if (currentCommand == CMD_SAVE )
-  {
-    saveAll();    
+  } else if (currentCommand == CMD_SAVE) {
+    saveAll();
   } else {
     currentClock = (currentClock < lastCurrentOutputClock) ? (currentClock + 1) : 0;
     vfoFreq = currentOutputClock[currentClock];
@@ -307,14 +297,15 @@ void doCommandUp() {
 
 void doCommandDown() {
   display.clear();
-  if ( currentCommand == CMD_STEP )
+  if (currentCommand == CMD_STEP)
     currentStep = (currentStep > 0) ? (currentStep - 1) : lastStepVFO;
-  else if (currentCommand == CMD_FAVORITE)
-  {
+  else if (currentCommand == CMD_FAVORITE) {
     currentFavorite = (currentFavorite > 0) ? (currentFavorite - 1) : lastFavorite;
     vfoFreq = favorite[currentFavorite];
     currentOutputClock[currentClock] = vfoFreq;
     isFreqChanged = true;
+  } else if (currentCommand == CMD_SAVE) {
+    saveAll();
   } else {
     currentClock = (currentClock > 0) ? (currentClock - 1) : lastCurrentOutputClock;
     vfoFreq = currentOutputClock[currentClock];
@@ -322,11 +313,9 @@ void doCommandDown() {
   delay(200);
 }
 
-void loop()
-{
+void loop() {
   // Check if the encoder has moved.
-  if (encoderCount != 0)
-  {
+  if (encoderCount != 0) {
     if (encoderCount == 1)
       changeFreq(1);
     else
@@ -337,7 +326,7 @@ void loop()
   // Switch the current command control (step or favorite frequencies)
   if (digitalRead(SWITCH_CMD) == LOW) {
     display.clear();
-    currentCommand = (currentCommand >= 3)? 0: (currentCommand + 1);
+    currentCommand = (currentCommand >= 3) ? 0 : (currentCommand + 1);
     showStatus();
     delay(200);
   } else if (digitalRead(BUTTON_UP) == LOW) {
@@ -348,9 +337,8 @@ void loop()
     showStatus();
   }
 
-  if (isFreqChanged)
-  {
-    si5351.set_freq(vfoFreq, (si5351_clock) currentClock);
+  if (isFreqChanged) {
+    si5351.set_freq(vfoFreq, (si5351_clock)currentClock);
     currentOutputClock[currentClock] = vfoFreq;
     showStatus();
     isFreqChanged = false;
