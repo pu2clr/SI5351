@@ -26,6 +26,8 @@
    |                    | A                         |      3        |
    |                    | B                         |      2        |
 
+    This added EEPROM support to save the last frequency, step, favorite and output clock used.
+
    See https://github.com/etherkit/Si5351Arduino  and know how to calibrate your Si5351
    Author: Ricardo Lima Caratti 2020
 
@@ -33,6 +35,7 @@
 
 #include <si5351.h>
 #include <Wire.h>
+#include <EEPROM.h>
 #include "Rotary.h"
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiAvrI2c.h"
@@ -46,7 +49,8 @@
 
 #define CMD_STEP     0
 #define CMD_FAVORITE 1
-#define CMD_CLK      2 
+#define CMD_CLK      2
+#define CMD_SAVE     3
 
 // OLED Diaplay constants
 #define I2C_ADDRESS 0x3C
@@ -58,6 +62,11 @@
 
 #define MIN_VFO 3276800LLU
 #define MAX_VFO 16000000000LLU    // VFO max. frequency 30MHz
+
+
+const uint8_t app_id = 80;  // Useful to check the EEPROM content before processing useful data
+const int eeprom_address = 0;
+
 
 // Struct for step
 typedef struct
@@ -99,7 +108,7 @@ int currentClock = 0; // current clock output 0
 
 int currentCommand = CMD_STEP;
 
-char *cmd[] = {(char *) "Step", (char *) "Favorite", (char *) "Out. Clk" };
+char *cmd[] = {(char *) "Step", (char *) "Favorite", (char *) "Out. Clk", (char *) "Save" };
 char *clk[] = {(char *) "CLK0", (char *) "CLK1", (char *) "CLK2" };
 
 
@@ -137,6 +146,14 @@ void setup()
   display.setFont(Adafruit5x7);
   display.set1X();
   display.clear();
+  if (digitalRead(BUTTON_UP) == LOW) {
+    EEPROM.write(eeprom_address, 0);
+    display.setCursor(0, 0);
+    display.print("RESET TO DEFAULT");
+    delay(3000);
+  }
+
+  display.clear();
   display.setCursor(17, 0);
   display.print("Multipurpose");
   display.setCursor(33, 1);
@@ -148,8 +165,6 @@ void setup()
   delay(4000);
   display.clear();
 
-  vfoFreq = favorite[currentFavorite];
-  currentOutputClock[currentClock] = vfoFreq;
 
   showStatus();
   // Initiating the Signal Generator (si5351)
@@ -157,6 +172,17 @@ void setup()
   // Adjusting the frequency (see how to calibrate the Si5351 - example si5351_calibration.ino)
   si5351.set_correction(CORRECTION_FACTOR, SI5351_PLL_INPUT_XO);
   si5351.set_pll(SI5351_PLL_FIXED, SI5351_PLLA);
+
+  // Check the EEPROM content. If it contains valid data, read it (previous setup).
+  if (EEPROM.read(eeprom_address) == app_id) {
+    readAll();
+  } else {
+    // Defult values
+    vfoFreq = favorite[currentFavorite];
+    currentOutputClock[currentClock] = vfoFreq;
+    saveAll();
+  }
+
   si5351.set_freq(vfoFreq, (si5351_clock) currentClock); // Start CLK0 (VFO)
 
   // Disable CLK 1 and 2 outputs
@@ -172,6 +198,33 @@ void setup()
 
   delay(1000);
 }
+
+// Save all settings to EEPROM
+void saveAll() {
+  int addr = eeprom_address;
+  EEPROM.write(addr++, app_id);
+  EEPROM.put(addr, vfoFreq);
+  addr += sizeof(vfoFreq);
+  EEPROM.put(addr, currentStep);
+  addr += sizeof(currentStep);
+  EEPROM.put(addr, currentFavorite);
+  addr += sizeof(currentFavorite);
+  EEPROM.put(addr, currentClock);
+
+}
+
+// Read all settings from EEPROM
+void readAll() {
+  int addr = eeprom_address + 1; // skip app_id
+  EEPROM.get(addr, vfoFreq);
+  addr += sizeof(vfoFreq);
+  EEPROM.get(addr, currentStep);
+  addr += sizeof(currentStep);
+  EEPROM.get(addr, currentFavorite);
+  addr += sizeof(currentFavorite);
+  EEPROM.get(addr, currentClock);
+}
+
 
 // Use Rotary.h and  Rotary.cpp implementation to process encoder via interrupt
 void rotaryEncoder()
@@ -242,6 +295,9 @@ void doCommandUp() {
     vfoFreq = favorite[currentFavorite];
     currentOutputClock[currentClock] = vfoFreq;
     isFreqChanged = true;
+  } else if (currentCommand == CMD_SAVE )
+  {
+    saveAll();    
   } else {
     currentClock = (currentClock < lastCurrentOutputClock) ? (currentClock + 1) : 0;
     vfoFreq = currentOutputClock[currentClock];
@@ -281,7 +337,7 @@ void loop()
   // Switch the current command control (step or favorite frequencies)
   if (digitalRead(SWITCH_CMD) == LOW) {
     display.clear();
-    currentCommand = (currentCommand >= 2)? 0: (currentCommand + 1);;
+    currentCommand = (currentCommand >= 3)? 0: (currentCommand + 1);
     showStatus();
     delay(200);
   } else if (digitalRead(BUTTON_UP) == LOW) {
